@@ -45,6 +45,24 @@ app.get('/tasklists', (req, res)=> {
         .catch((error) => console.log(error));
  } );
 
+  //EndPoints for createing a TaskList
+  app.post('/tasklists', (req, res) => {
+    //console.log('hello i am inside post methode');
+     let savedPost = new TaskList({
+    "title" : req.body.title
+    })
+
+    savedPost.save()
+    .then((data) => {
+        console.log( savedPost);
+        res.status(201).send(data);
+    })
+    .catch((err) => {
+        res.status(500).send('Error saving post to database ' + err);
+    });
+
+  })
+
 
  //Get All Task 
 // http:localhost:3000/tasklist => [{Task}, {Task}, {Task}]
@@ -57,6 +75,8 @@ app.get('/task', (req, res)=> {
 
         .catch((error) => console.log(error));
  } );
+
+
  
 
 
