@@ -75,8 +75,24 @@ app.use(express.json()); //3rd party body parser
     app.get('/tasklists/:id', (req, res) => {
         TaskList.findById(req.params.id)
         .then((data) => { res.status(200).send(data) })
-            .catch((err) => { res.status(404).send(err) });
+        .catch((err) => { res.status(404).send(err) });
     });
+
+    //PUT is full update of object
+    app.put('/tasklists/:id', (req, res) => {
+        
+        TaskList.findOneAndUpdate({_id: req.params.id}, { $set: req.body})
+        .then((data) => { res.status(200).send(data) })
+        .catch((err) => { res.status(404).send(err) });
+    });
+    //patch is partial update of one filed of an object
+    app.put('/tasklists/:id', (req, res) => {
+        
+        TaskList.findOneAndUpdate({_id: req.params.id}, { $set: req.body})
+        .then((data) => { res.status(200).send(data) })
+        .catch((err) => { res.status(404).send(err) });
+    });
+
     
 
 
