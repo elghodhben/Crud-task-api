@@ -93,6 +93,13 @@ app.use(express.json()); //3rd party body parser
         .catch((err) => { res.status(404).send(err) });
     });
 
+    //EndPoints Delete a tasklists by id 
+    app.delete('/tasklists/:id', (req, res) => {
+        TaskList.findByIdAndDelete(req.params.id)
+        .then((data) => { res.status(200).send(data) })
+        .catch((err) => { res.status(404).send(err)});
+    })
+
     
 
 
