@@ -86,7 +86,7 @@ app.use(express.json()); //3rd party body parser
         .catch((err) => { res.status(404).send(err) });
     });
     //patch is partial update of one filed of an object
-    app.put('/tasklists/:id', (req, res) => {
+    app.patch('/tasklists/:id', (req, res) => {
         
         TaskList.findOneAndUpdate({_id: req.params.id}, { $set: req.body})
         .then((data) => { res.status(200).send(data) })
