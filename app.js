@@ -33,27 +33,27 @@ app.use(express.json()); //3rd party body parser
 
 // Routes TaskList API
 
-    //Get All Task Lists
-    // http:localhost:3000/tasklist => [{TaskList}, {TaskList}, {TaskList}]
+//Get All Task Lists
+// http:localhost:3000/tasklist => [{TaskList}, {TaskList}, {TaskList}]
 
-    app.get('/tasklists', (req, res)=> { 
-        
-        TaskList.find({})
-            
-            .then( (lists) => {res.status(200).send(lists)} )
+app.get('/tasklists', (req, res) => {
 
-            .catch((error) => console.log(error));
-    } );
+    TaskList.find({})
 
-    //EndPoints for createing a TaskList
-    app.post('/tasklists', (req, res) => {
-        //console.log('hello i am inside post methode');
+        .then((lists) => { res.status(200).send(lists) })
 
-        const savedPost = new TaskList({
-        "title" : req.body.title
-        });
+        .catch((error) => console.log(error));
+});
 
-        savedPost.save()
+//EndPoints for createing a TaskList
+app.post('/tasklists', (req, res) => {
+    //console.log('hello i am inside post methode');
+
+    const savedPost = new TaskList({
+        "title": req.body.title
+    });
+
+    savedPost.save()
         .then((data) => {
             res.status(201).send(data);
         })
@@ -61,9 +61,9 @@ app.use(express.json()); //3rd party body parser
             res.status(500).send('Error saving post to database ' + err);
         });
 
-    })
+})
 
-    //EndPoints for gettask by ID
+//EndPoints for gettask by ID
 /*     app.get('/tasklists/:id', (req, res) => {
         
         TaskList.find({
@@ -72,51 +72,114 @@ app.use(express.json()); //3rd party body parser
             .catch((err) => { res.status(404).send(err) });
     }); */
 
-    app.get('/tasklists/:id', (req, res) => {
-        TaskList.findById(req.params.id)
+app.get('/tasklists/:id', (req, res) => {
+    TaskList.findById(req.params.id)
         .then((data) => { res.status(200).send(data) })
         .catch((err) => { res.status(404).send(err) });
-    });
+});
 
-    //PUT is full update of object
-    app.put('/tasklists/:id', (req, res) => {
-        
-        TaskList.findOneAndUpdate({_id: req.params.id}, { $set: req.body})
-        .then((data) => { res.status(200).send(data) })
-        .catch((err) => { res.status(404).send(err) });
-    });
-    //patch is partial update of one filed of an object
-    app.patch('/tasklists/:id', (req, res) => {
-        
-        TaskList.findOneAndUpdate({_id: req.params.id}, { $set: req.body})
-        .then((data) => { res.status(200).send(data) })
-        .catch((err) => { res.status(404).send(err) });
-    });
+//PUT is full update of object
+app.put('/tasklists/:id', (req, res) => {
 
-    //EndPoints Delete a tasklists by id 
-    app.delete('/tasklists/:id', (req, res) => {
-        TaskList.findByIdAndDelete(req.params.id)
+    TaskList.findOneAndUpdate({ _id: req.params.id }, { $set: req.body })
         .then((data) => { res.status(200).send(data) })
-        .catch((err) => { res.status(404).send(err)});
+        .catch((err) => { res.status(404).send(err) });
+});
+//patch is partial update of one filed of an object
+app.patch('/tasklists/:id', (req, res) => {
+
+    TaskList.findOneAndUpdate({ _id: req.params.id }, { $set: req.body })
+        .then((data) => { res.status(200).send(data) })
+        .catch((err) => { res.status(404).send(err) });
+});
+
+//EndPoints Delete a tasklists by id 
+app.delete('/tasklists/:id', (req, res) => {
+    TaskList.findByIdAndDelete(req.params.id)
+        .then((data) => { res.status(200).send(data) })
+        .catch((err) => { res.status(404).send(err) });
+})
+
+
+
+
+
+/** CRUD operation for Task, a task should always belong to a Tasklist  */
+
+//Get All Task 
+// http://localhost:3000/tasklists/id/tasks => [{Task}, {Task}, {Task}]
+app.get('/tasklists/:tasklistsID/tasks', (req, res) => {
+
+    Task.find({ _tasklistId: req.params.tasklistsID })
+        .then((lists) => {
+            if (!lists) {
+                return res.status(404).send("No tasks found for this task list");
+            }
+            res.status(200).send(lists);
+        })
+        .catch((error) => {
+            console.log(error);
+            res.status(500).send("Internal Server Error");
+        });
+});
+
+//Create a task inside a particular task list
+
+app.post('/tasklists/:id/tasks', (req, res) => {
+    console.log(req.body);
+    let taskObj = {
+        'title': req.body.title,
+        '_tasklistId': req.params.id
+    };
+    Task(taskObj).save()
+        .then((taskobj) => {
+            res.status(201).send(taskobj);
+        })
+        .catch((error) => {
+            res.status(500).send(error);
+        });
+});
+
+// http://localhost:3000/tasklists/id/tasks/:taskId
+// Get 1 task inside 1 tasklist
+
+app.get('/tasklists/:id/tasks/:taskId', (req, res) => {
+    Task.findOne({
+        _tasklistId: req.params.id,
+        _id: req.params.taskId
     })
+        .then((task) => {
+            if (!task) {
+                return res.status(404).send("Task not found");
+            }
+            res.status(200).send(task);
+        })
+        .catch((error) => {
+            res.status(500).send(error);
+        });
+});
 
-    
+//Update 1 task belonging to 1 Tasklist
+app.patch('/tasklists/:id/tasks/:taskId', (req, res) => {
+    Task.findOneAndUpdate({_tasklistId: req.params.id, _id: req.params.taskId}, { $set:req.body })
+    .then((tasklist) => {
+        res.status(200).send(tasklist);
+    })
+    .catch((error) => {
+        res.status(500).send(error);
+    });
+});
 
-
-    //Get All Task 
-    // http:localhost:3000/tasklist => [{Task}, {Task}, {Task}]
-
-    app.get('/task', (req, res)=> { 
-        
-        TaskList.find({})
-            
-            .then( (lists) => {res.send(lists)} )
-
-            .catch((error) => console.log(error));
-    } );
-
-
- 
+//Delete 1 task belonging to 1 TaskList
+app.delete('/tasklists/:id/tasks/:taskId', (req, res) =>{
+    Task.findOneAndDelete({_tasklistId: req.params.id, _id: req.params.taskId})
+    .then((task) => {
+        res.status(200).send(task);
+    })
+    .catch((err) => {
+        res.status(500).send(err);
+    });
+});
 
 
 app.listen(3000, () => console.log('server started on port 3000'));
